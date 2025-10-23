@@ -1,0 +1,63 @@
+package edu.sjsu.android.productiv;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.ListFragment;
+
+import java.util.ArrayList;
+
+public class todo_list extends ListFragment {
+
+    private ArrayList<String> todoItems;
+    private ArrayAdapter<String> adapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_todo_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // place holder list just for view
+        todoItems = new ArrayList<>();
+        todoItems.add("Sample Task 1");
+        todoItems.add("Sample Task 2");
+        todoItems.add("Sample Task 3");
+
+        // Create and set the adapter
+        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, todoItems);
+        setListAdapter(adapter);
+    }
+
+    @Override
+    public void onListItemClick(@NonNull ListView l, @NonNull View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        // Handle item click, implement edit/delete functionality here probably
+        String selectedItem = todoItems.get(position);
+        //placeholder for future functionality
+    }
+
+    // todo item can call this later when implementing add functionalit
+    public void addTodoItem(String item) {
+        todoItems.add(item);
+        adapter.notifyDataSetChanged();
+    }
+
+    // todo remove item
+    public void removeTodoItem(int position) {
+        if (position >= 0 && position < todoItems.size()) {
+            todoItems.remove(position);
+            adapter.notifyDataSetChanged();
+        }
+    }
+}
