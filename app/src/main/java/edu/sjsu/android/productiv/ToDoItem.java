@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-public class ToDoItem implements Serializable {
+public class ToDoItem implements Serializable, Comparable<ToDoItem> {
     private String name;
     private String description;
     private LocalDate dueDate;
@@ -36,4 +36,12 @@ public class ToDoItem implements Serializable {
     public String toString() {
         return this.getName();
     }
+
+    @Override
+    public int compareTo(ToDoItem item) {
+        // temp comparison ... eventually implement hybrid comparison that
+        // considers both priority and due date
+        return Integer.compare(this.priority, item.priority);
+    }
+
 }
