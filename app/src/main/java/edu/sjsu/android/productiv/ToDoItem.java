@@ -1,5 +1,7 @@
 package edu.sjsu.android.productiv;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -27,5 +29,11 @@ public class ToDoItem implements Serializable {
     }
     public int getPriority() {
         return this.priority;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.getName();
     }
 }
