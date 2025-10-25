@@ -1,8 +1,9 @@
 package edu.sjsu.android.productiv;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class ToDoItem {
+public class ToDoItem implements Serializable {
     private String name;
     private String description;
     private LocalDate dueDate;
