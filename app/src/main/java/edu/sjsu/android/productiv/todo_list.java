@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.ListFragment;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,7 +53,12 @@ public class todo_list extends ListFragment {
         super.onListItemClick(l, v, position, id);
         // Handle item click, implement edit/delete functionality here probably
         ToDoItem selectedItem = todoItems.get(position);
-        //placeholder for future functionality
+
+        Bundle args = new Bundle();
+        args.putSerializable("param1", selectedItem);
+
+        Navigation.findNavController(v)
+                .navigate(R.id.action_todoListFragment_to_toDoItemView, args);
     }
 
     // todo item can call this later when implementing add functionalit
