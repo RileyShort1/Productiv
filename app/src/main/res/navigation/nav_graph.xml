@@ -57,5 +57,6 @@
         android:id="@+id/toDoItemView"
         android:name="edu.sjsu.android.productiv.ToDoItemView"
         android:label="fragment_to_do_item_view"
-        tools:layout="@layout/fragment_to_do_item_view" />
+        tools:layout="@layout/fragment_to_do_item_view">
+        </fragment>
 </navigation>

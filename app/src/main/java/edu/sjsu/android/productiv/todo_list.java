@@ -55,7 +55,7 @@ public class todo_list extends ListFragment {
         ToDoItem selectedItem = todoItems.get(position);
 
         Bundle args = new Bundle();
-        args.putSerializable("selectedItem", selectedItem);
+        args.putSerializable("param1", selectedItem);
 
         Navigation.findNavController(v)
                 .navigate(R.id.action_todoListFragment_to_toDoItemView, args);
