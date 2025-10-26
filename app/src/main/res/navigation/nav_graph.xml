@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/signInFragment">
 
@@ -37,7 +38,11 @@
     <fragment
         android:id="@+id/todoListFragment"
         android:name="edu.sjsu.android.productiv.todo_list"
-        android:label="To-Do List" />
+        android:label="To-Do List" >
+        <action
+            android:id="@+id/action_todoListFragment_to_toDoItemView"
+            app:destination="@id/toDoItemView" />
+    </fragment>
 
     <fragment
         android:id="@+id/timerFragment"
@@ -48,4 +53,9 @@
         android:id="@+id/calendarFragment"
         android:name="edu.sjsu.android.productiv.calendar"
         android:label="Calendar" />
+    <fragment
+        android:id="@+id/toDoItemView"
+        android:name="edu.sjsu.android.productiv.ToDoItemView"
+        android:label="fragment_to_do_item_view"
+        tools:layout="@layout/fragment_to_do_item_view" />
 </navigation>
