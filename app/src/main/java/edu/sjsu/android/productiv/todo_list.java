@@ -24,6 +24,8 @@ public class todo_list extends ListFragment {
     private ArrayList<ToDoItem> todoItems;
     private ArrayAdapter<ToDoItem> adapter;
 
+    private TodoItemDB database;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -35,13 +37,14 @@ public class todo_list extends ListFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // place holder list just for view
-        todoItems = new ArrayList<>();
+        database = new TodoItemDB(requireContext());
 
-        todoItems.add(new ToDoItem("CS175 HW", "Complete the hw", LocalDate.now(), 4));
-        todoItems.add(new ToDoItem("CS147 HW", "do the lab assignment", LocalDate.now(), 2));
-        todoItems.add(new ToDoItem("CS157C HW", "Complete Midterm", LocalDate.now(), 1));
+        // temp items
+        database.insert(new ToDoItem("CS175 HW", "Complete the hw", LocalDate.now(), 4));
+        database.insert(new ToDoItem("CS147 HW", "do the lab assignment", LocalDate.now(), 2));
+        database.insert(new ToDoItem("CS157C HW", "Complete Midterm", LocalDate.now(), 1));
 
+        todoItems = database.getAllToDoItems();
         todoItems.sort(ToDoItem::compareTo);
         // Create and set the adapter
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, todoItems);

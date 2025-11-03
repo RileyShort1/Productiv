@@ -25,15 +25,15 @@ public class TodoItemDB extends SQLiteOpenHelper {
     private static final String CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_NAME + " TEXT NOT NULL, " +
+                    COLUMN_NAME + " TEXT NOT NULL UNIQUE, " +
                     COLUMN_DESCRIPTION + " TEXT, " +
                     COLUMN_DUE_DATE + " TEXT, " +
                     COLUMN_PRIORITY + " INTEGER" +
                     ");";
 
 
-    public TodoItemDB(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    public TodoItemDB(@Nullable Context context) {
+        super(context, DATABASE_NAME, null, VERSION);
     }
 
     @Override
@@ -58,12 +58,12 @@ public class TodoItemDB extends SQLiteOpenHelper {
         values.put(COLUMN_PRIORITY, item.getPriority());
 
         long id = database.insert(TABLE_NAME, null, values);
-        database.close();
+        //database.close();
         return id;
     }
 
-    public List<ToDoItem> getAllToDoItems() {
-        List<ToDoItem> list = new ArrayList<>();
+    public ArrayList<ToDoItem> getAllToDoItems() {
+        ArrayList<ToDoItem> list = new ArrayList<>();
         SQLiteDatabase database = getReadableDatabase();
         Cursor cursor = database.query(TABLE_NAME, null, null, null, null, null, COLUMN_PRIORITY + " DESC");
 
@@ -80,7 +80,7 @@ public class TodoItemDB extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        database.close();
+        //database.close();
         return list;
     }
 
