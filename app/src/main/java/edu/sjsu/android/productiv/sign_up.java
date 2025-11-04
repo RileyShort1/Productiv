@@ -1,10 +1,13 @@
 package edu.sjsu.android.productiv;
 
+import android.content.ContentValues;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,9 +15,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 public class sign_up extends Fragment {
-    public sign_up() {
+    private EditText nameEditText;
+    private EditText passwordEditText;
 
-    }
 
     @Nullable
     @Override
@@ -27,10 +30,29 @@ public class sign_up extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Button btnSignUp = view.findViewById(R.id.btn_sign_up);
+        nameEditText = view.findViewById(R.id.edit_text_signup_name);
+        passwordEditText = view.findViewById(R.id.edit_text_signup_password);
 
         // Navs to to-do list when clicked
-        btnSignUp.setOnClickListener(v -> {
+        btnSignUp.setOnClickListener(v -> {signUp(v);});
+    }
+
+    public void signUp (View v) {
+        ContentValues values = new ContentValues();
+
+        String name = nameEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
+
+        if (!name.isEmpty() && !password.isEmpty()) {
+            values.put("name", name);
+            values.put("password", password);
+            UsersDB db = new UsersDB(getContext());
+            db.insert(values);
             Navigation.findNavController(v).navigate(R.id.action_signUpFragment_to_todoListFragment);
-        });
+        }
+        else {
+            Toast.makeText(getContext(), "Name and Password must be provided", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }
