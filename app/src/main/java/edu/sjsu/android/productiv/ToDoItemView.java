@@ -15,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.time.format.DateTimeFormatter;
+
 public class ToDoItemView extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
@@ -57,11 +59,15 @@ public class ToDoItemView extends Fragment {
         TextView description  = view.findViewById(R.id.description);
         TextView priority = view.findViewById(R.id.priority);
         LinearLayout priorityBadge = view.findViewById(R.id.priorityBadge);
+        TextView dueDateField = view.findViewById(R.id.dueDate);
 
         // Gets the text priority
         title.setText(item.getName());
         description.setText(item.getDescription());
         priority.setText(Integer.toString(item.getPriority()));
+
+        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        dueDateField.setText(item.getDueDate().format(formatter1));
 
         // Gets priority color
         setPriorityBadgeColor(priorityBadge, item.getPriority());

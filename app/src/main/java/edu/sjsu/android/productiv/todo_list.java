@@ -54,11 +54,18 @@ public class todo_list extends ListFragment {
         // Create and set the adapter
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, todoItems);
         setListAdapter(adapter);
+
+        getParentFragmentManager().setFragmentResultListener("requestKey", this, (key, bundle) -> {
+            ToDoItem newObject = (ToDoItem) bundle.getSerializable("result");
+            if (newObject != null) {
+                database.insert(newObject);
+                addTodoItem(newObject);
+            }
+        });
     }
 
     public void onAddTaskButtonClick (View view) {
-        Toast.makeText(getActivity(), "Clicked Add Task",
-                Toast.LENGTH_LONG).show();
+        Navigation.findNavController(view).navigate(R.id.action_todoListFragment_to_addNewItem);
     }
 
     @Override
