@@ -42,6 +42,9 @@
         <action
             android:id="@+id/action_todoListFragment_to_toDoItemView"
             app:destination="@id/toDoItemView" />
+        <action
+            android:id="@+id/action_todoListFragment_to_addNewItem"
+            app:destination="@id/addNewItem" />
     </fragment>
 
     <fragment
@@ -59,4 +62,12 @@
         android:label="fragment_to_do_item_view"
         tools:layout="@layout/fragment_to_do_item_view">
         </fragment>
+    <fragment
+        android:id="@+id/addNewItem"
+        android:name="edu.sjsu.android.productiv.AddNewItem"
+        android:label="AddNewItem" >
+        <action
+            android:id="@+id/action_addNewItem_to_todoListFragment"
+            app:destination="@id/todoListFragment" />
+    </fragment>
 </navigation>
