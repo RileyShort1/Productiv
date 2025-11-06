@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +39,9 @@ public class todo_list extends ListFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Button addTask = view.findViewById(R.id.addTaskButton);
+        addTask.setOnClickListener(this::onAddTaskButtonClick);
+
         database = new TodoItemDB(requireContext());
 
         // temp items
@@ -49,6 +54,11 @@ public class todo_list extends ListFragment {
         // Create and set the adapter
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, todoItems);
         setListAdapter(adapter);
+    }
+
+    public void onAddTaskButtonClick (View view) {
+        Toast.makeText(getActivity(), "Clicked Add Task",
+                Toast.LENGTH_LONG).show();
     }
 
     @Override

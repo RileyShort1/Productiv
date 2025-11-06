@@ -34,6 +34,12 @@
         android:textSize="18sp"
         android:textColor="@android:color/darker_gray" />
 
+    <Button
+        android:id="@+id/addTaskButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Task" />
+
     <!-- just a placeholder UI for now -->
 
 </LinearLayout>
