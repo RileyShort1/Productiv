@@ -12,8 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class AddNewItem extends Fragment {
 
@@ -60,6 +62,27 @@ public class AddNewItem extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        EditText dueDate = view.findViewById(R.id.dueDate);
+
+        MaterialDatePicker<Long> picker =
+                MaterialDatePicker.Builder.datePicker()
+                        .setTitleText("Select due date")
+                        .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                        .build();
+
+        dueDate.setOnClickListener(v -> {
+            picker.show(getParentFragmentManager(), "dueDate");
+        });
+
+        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        picker.addOnPositiveButtonClickListener(selection -> {
+            java.time.LocalDate date = java.time.Instant.ofEpochMilli(selection)
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .toLocalDate();
+
+            dueDate.setText(date.format(formatter1));
+        });
+
         EditText desc = view.findViewById(R.id.description);
         EditText name = view.findViewById(R.id.itemName);
         EditText priority = view.findViewById(R.id.priority);
@@ -76,8 +99,9 @@ public class AddNewItem extends Fragment {
                     prty = Integer.parseInt(priority.getText().toString());
                 }
 
-                // need to fix local date element
-                ToDoItem item = new ToDoItem(name.getText().toString(), desc.getText().toString(), LocalDate.now(), prty);
+                LocalDate date = LocalDate.parse(dueDate.getText().toString(), formatter1);
+
+                ToDoItem item = new ToDoItem(name.getText().toString(), desc.getText().toString(), date, prty);
 
                 if (!(name.getText().toString().isEmpty())) {
                     Bundle result = new Bundle();
