@@ -45,9 +45,9 @@ public class todo_list extends ListFragment {
         database = new TodoItemDB(requireContext());
 
         // temp items
-        database.insert(new ToDoItem("CS175 HW", "Complete the hw", LocalDate.now(), 4));
-        database.insert(new ToDoItem("CS147 HW", "do the lab assignment", LocalDate.now(), 2));
-        database.insert(new ToDoItem("CS157C HW", "Complete Midterm", LocalDate.now(), 1));
+        //database.insert(new ToDoItem("CS175 HW", "Complete the hw", LocalDate.now(), 4));
+        //database.insert(new ToDoItem("CS147 HW", "do the lab assignment", LocalDate.now(), 2));
+        //database.insert(new ToDoItem("CS157C HW", "Complete Midterm", LocalDate.now(), 1));
 
         todoItems = database.getAllToDoItems();
         todoItems.sort(ToDoItem::compareTo);
@@ -60,6 +60,14 @@ public class todo_list extends ListFragment {
             if (newObject != null) {
                 database.insert(newObject);
                 addTodoItem(newObject);
+            }
+        });
+
+        getParentFragmentManager().setFragmentResultListener("removeKey", this, (key, bundle) -> {
+            ToDoItem newObject = (ToDoItem) bundle.getSerializable("itemToRemove");
+            if (newObject != null) {
+                database.remove(newObject);
+                removeToDoItemByName(newObject);
             }
         });
     }
@@ -93,5 +101,14 @@ public class todo_list extends ListFragment {
             todoItems.remove(position);
             adapter.notifyDataSetChanged();
         }
+    }
+    public void removeToDoItemByName(ToDoItem item) {
+        for (int i = 0; i < todoItems.size(); i++) {
+            if (todoItems.get(i).getName().equals(item.getName())) {
+                todoItems.remove(i);
+                break;
+            }
+        }
+        adapter.notifyDataSetChanged();
     }
 }

@@ -61,7 +61,10 @@
         android:name="edu.sjsu.android.productiv.ToDoItemView"
         android:label="fragment_to_do_item_view"
         tools:layout="@layout/fragment_to_do_item_view">
-        </fragment>
+        <action
+            android:id="@+id/action_toDoItemView_to_todoListFragment"
+            app:destination="@id/todoListFragment" />
+    </fragment>
     <fragment
         android:id="@+id/addNewItem"
         android:name="edu.sjsu.android.productiv.AddNewItem"
