@@ -7,13 +7,16 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.time.format.DateTimeFormatter;
 
@@ -21,6 +24,7 @@ public class ToDoItemView extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private ToDoItem item;
+
 
     public ToDoItemView() {
         // Required empty public constructor
@@ -61,6 +65,9 @@ public class ToDoItemView extends Fragment {
         LinearLayout priorityBadge = view.findViewById(R.id.priorityBadge);
         TextView dueDateField = view.findViewById(R.id.dueDate);
 
+        Button completeButton = view.findViewById(R.id.addButton);
+        completeButton.setOnClickListener(this::completeItem);
+
         // Gets the text priority
         title.setText(item.getName());
         description.setText(item.getDescription());
@@ -72,6 +79,15 @@ public class ToDoItemView extends Fragment {
         // Gets priority color
         setPriorityBadgeColor(priorityBadge, item.getPriority());
 
+    }
+
+    public void completeItem(View view) {
+        //Toast.makeText(getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+        // send current item back to remove from db
+        Bundle result = new Bundle();
+        result.putSerializable("itemToRemove", item);
+        getParentFragmentManager().setFragmentResult("removeKey", result);
+        Navigation.findNavController(view).navigate(R.id.action_toDoItemView_to_todoListFragment);
     }
 
     // Changes color of priority

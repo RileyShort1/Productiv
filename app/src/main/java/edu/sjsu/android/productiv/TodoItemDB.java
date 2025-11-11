@@ -62,6 +62,17 @@ public class TodoItemDB extends SQLiteOpenHelper {
         return id;
     }
 
+    public boolean remove(ToDoItem item) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsDeleted = db.delete(
+                TABLE_NAME,
+                "name = ?",
+                new String[]{String.valueOf(item.getName())}
+        );
+        //db.close();
+        return rowsDeleted > 0;
+    }
+
     public ArrayList<ToDoItem> getAllToDoItems() {
         ArrayList<ToDoItem> list = new ArrayList<>();
         SQLiteDatabase database = getReadableDatabase();
