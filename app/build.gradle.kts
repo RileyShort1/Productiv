@@ -40,6 +40,8 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.drawerlayout)
+    implementation("com.redmadrobot:input-mask-android:7.2.4")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
