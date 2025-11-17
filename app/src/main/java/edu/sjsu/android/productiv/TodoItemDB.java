@@ -95,5 +95,23 @@ public class TodoItemDB extends SQLiteOpenHelper {
         return list;
     }
 
+    public boolean update(String originalName, ToDoItem updatedItem) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, updatedItem.getName());
+        values.put(COLUMN_DESCRIPTION, updatedItem.getDescription());
+        values.put(COLUMN_DUE_DATE, updatedItem.getDueDate().toString());
+        values.put(COLUMN_PRIORITY, updatedItem.getPriority());
+
+        int rowsUpdated = db.update(
+                TABLE_NAME,
+                values,
+                COLUMN_NAME + " = ?",
+                new String[]{originalName}
+        );
+
+        return rowsUpdated > 0;
+    }
+
 
 }

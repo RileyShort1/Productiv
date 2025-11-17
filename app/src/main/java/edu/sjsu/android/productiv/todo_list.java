@@ -70,6 +70,14 @@ public class todo_list extends ListFragment {
                 removeToDoItemByName(newObject);
             }
         });
+
+        getParentFragmentManager().setFragmentResultListener("editListResult", this, (key, bundle) -> {
+            String originalName = bundle.getString("originalName");
+            ToDoItem updatedItem = (ToDoItem) bundle.getSerializable("updatedItem");
+            if (originalName != null && updatedItem != null) {
+                updateToDoItem(originalName, updatedItem);
+            }
+        });
     }
 
     public void onAddTaskButtonClick (View view) {
@@ -109,6 +117,17 @@ public class todo_list extends ListFragment {
                 break;
             }
         }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void updateToDoItem(String originalName, ToDoItem updatedItem) {
+        for (int i = 0; i < todoItems.size(); i++) {
+            if (todoItems.get(i).getName().equals(originalName)) {
+                todoItems.set(i, updatedItem);
+                break;
+            }
+        }
+        todoItems.sort(ToDoItem::compareTo);
         adapter.notifyDataSetChanged();
     }
 }
