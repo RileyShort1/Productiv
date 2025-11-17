@@ -24,6 +24,7 @@ public class ToDoItemView extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private ToDoItem item;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
 
     public ToDoItemView() {
@@ -58,27 +59,46 @@ public class ToDoItemView extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // find your UI elements
-        TextView title = view.findViewById(R.id.itemName);
-        TextView description  = view.findViewById(R.id.description);
-        TextView priority = view.findViewById(R.id.priority);
-        LinearLayout priorityBadge = view.findViewById(R.id.priorityBadge);
-        TextView dueDateField = view.findViewById(R.id.dueDate);
+        final TextView title = view.findViewById(R.id.itemName);
+        final TextView description  = view.findViewById(R.id.description);
+        final TextView priorityView = view.findViewById(R.id.priority);
+        final LinearLayout priorityBadge = view.findViewById(R.id.priorityBadge);
+        final TextView dueDateField = view.findViewById(R.id.dueDate);
 
         Button completeButton = view.findViewById(R.id.addButton);
         completeButton.setOnClickListener(this::completeItem);
 
-        // Gets the text priority
+        Button editButton = view.findViewById(R.id.editButton);
+        editButton.setOnClickListener(v -> {
+            Bundle args = new Bundle();
+            args.putSerializable("itemToEdit", item);
+            Navigation.findNavController(v).navigate(R.id.action_toDoItemView_to_toDoItemEdit, args);
+        });
+
+        bindItemToUi(title, description, priorityView, dueDateField, priorityBadge);
+
+        getParentFragmentManager().setFragmentResultListener("editResult", this, (key, bundle) -> {
+            ToDoItem updatedItem = (ToDoItem) bundle.getSerializable("updatedItem");
+            if (updatedItem != null) {
+                item = updatedItem;
+                bindItemToUi(title, description, priorityView, dueDateField, priorityBadge);
+            }
+        });
+    }
+
+    private void bindItemToUi(TextView title,
+                              TextView description,
+                              TextView priority,
+                              TextView dueDateField,
+                              LinearLayout priorityBadge) {
+        if (item == null) {
+            return;
+        }
         title.setText(item.getName());
         description.setText(item.getDescription());
         priority.setText(Integer.toString(item.getPriority()));
-
-        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        dueDateField.setText(item.getDueDate().format(formatter1));
-
-        // Gets priority color
+        dueDateField.setText(item.getDueDate().format(formatter));
         setPriorityBadgeColor(priorityBadge, item.getPriority());
-
     }
 
     public void completeItem(View view) {
