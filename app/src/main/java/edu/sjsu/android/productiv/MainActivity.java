@@ -1,17 +1,15 @@
 package edu.sjsu.android.productiv;
 
 import android.os.Bundle;
-import android.view.MenuItem;
-
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -21,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private NavController navController;
     private NavigationView navigationView;
     private Toolbar toolbar;
+    private AppBarConfiguration appBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,33 +41,16 @@ public class MainActivity extends AppCompatActivity {
             navController = navHostFragment.getNavController();
         }
 
-        // Set up drawer toggle
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+        if (navController == null) {
+            return;
+        }
 
-        // Set up navigation view
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
+        appBarConfiguration = new AppBarConfiguration.Builder(R.id.todoListFragment)
+                .setOpenableLayout(drawerLayout)
+                .build();
 
-                // Navigate based on menu item selected
-                if (id == R.id.todoListFragment) {
-                    navController.navigate(R.id.todoListFragment);
-                } else if (id == R.id.timerFragment) {
-                    navController.navigate(R.id.timerFragment);
-                } else if (id == R.id.calendarFragment) {
-                    navController.navigate(R.id.calendarFragment);
-                }
-
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            }
-        });
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
 
         // Listen to nav changes to hide/show drawer
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
@@ -103,5 +85,25 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        if (navController == null || navController.getCurrentDestination() == null) {
+            return super.onSupportNavigateUp();
+        }
+
+        int currentDestinationId = navController.getCurrentDestination().getId();
+
+        if (currentDestinationId == R.id.todoListFragment) {
+            return NavigationUI.navigateUp(navController, appBarConfiguration)
+                    || super.onSupportNavigateUp();
+        }
+
+        boolean popped = navController.popBackStack(R.id.todoListFragment, false);
+        if (!popped) {
+            navController.navigate(R.id.todoListFragment);
+        }
+        return true;
     }
 }
