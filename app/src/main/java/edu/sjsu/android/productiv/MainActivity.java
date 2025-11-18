@@ -1,6 +1,9 @@
 package edu.sjsu.android.productiv;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -13,6 +16,16 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
@@ -20,6 +33,59 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private Toolbar toolbar;
     private AppBarConfiguration appBarConfiguration;
+
+    private static final String WORKER_URL = "https://ai-response-getter.rileyshort1.workers.dev/respond";
+
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
+    private static void onMain(Runnable r) { MAIN.post(r); }
+
+    public interface TextCallback { void onText(String text); }
+
+    public void callAi(String prompt, TextCallback cb) {
+        new Thread(() -> {
+            String fallback = "Welcome!";
+            String result = fallback;
+            try {
+                // JSON body
+                JSONObject body = new JSONObject();
+                body.put("prompt", prompt);
+                byte[] bytes = body.toString().getBytes("UTF-8");
+
+                // HTTPS POST
+                URL url = new URL(WORKER_URL);
+                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(20000);
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                conn.setFixedLengthStreamingMode(bytes.length);
+
+                try (OutputStream os = conn.getOutputStream()) { os.write(bytes); }
+
+                int code = conn.getResponseCode();
+                InputStream is = (code >= 200 && code < 300) ? conn.getInputStream() : conn.getErrorStream();
+                String resp = readAll(is);
+
+                try { result = new JSONObject(resp).optString("text", fallback); }
+                catch (Exception ignored) {}
+
+                conn.disconnect();
+            } catch (Exception ignored) {}
+
+            final String text = result;
+            onMain(() -> cb.onText(text));
+        }).start();
+    }
+
+    private static String readAll(InputStream is) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+            char[] buf = new char[2048]; int n;
+            while ((n = br.read(buf)) != -1) sb.append(buf, 0, n);
+        }
+        return sb.toString();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
