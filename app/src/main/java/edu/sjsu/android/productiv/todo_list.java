@@ -5,29 +5,27 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.ListFragment;
-import androidx.navigation.NavDirections;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class todo_list extends ListFragment {
+public class todo_list extends Fragment {
 
     private static boolean hasShownWelcomeThisSession = false;
 
     private ArrayList<ToDoItem> todoItems;
-    private ArrayAdapter<ToDoItem> adapter;
+    private TodoListAdapter adapter;
+    private ItemTouchHelper itemTouchHelper;
 
     private TodoItemDB database;
 
@@ -68,9 +66,37 @@ public class todo_list extends ListFragment {
 
         todoItems = database.getAllToDoItems();
         todoItems.sort(ToDoItem::compareTo);
-        // Create and set the adapter
-        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, todoItems);
-        setListAdapter(adapter);
+
+        // Set up RecyclerView
+        RecyclerView recyclerView = view.findViewById(R.id.todo_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        adapter = new TodoListAdapter(todoItems);
+        recyclerView.setAdapter(adapter);
+
+        // Set up item click listener
+        adapter.setOnItemClickListener((item, position) -> {
+            Bundle args = new Bundle();
+            args.putSerializable("param1", item);
+            Navigation.findNavController(view)
+                    .navigate(R.id.action_todoListFragment_to_toDoItemView, args);
+        });
+
+        // Set up drag and drop with ItemTouchHelper
+        ItemTouchHelperCallback callback = new ItemTouchHelperCallback(adapter);
+        itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        // Set up drag listener - this connects the drag handle to ItemTouchHelper
+        adapter.setOnStartDragListener(viewHolder -> {
+            itemTouchHelper.startDrag(viewHolder);
+        });
+
+        // Track when items are moved
+        adapter.setOnItemMoveListener((fromPosition, toPosition) -> {
+            // Update database order if needed
+            // For now, the order is maintained in memory
+        });
 
         getParentFragmentManager().setFragmentResultListener("requestKey", this, (key, bundle) -> {
             ToDoItem newObject = (ToDoItem) bundle.getSerializable("result");
@@ -102,10 +128,9 @@ public class todo_list extends ListFragment {
             waitingForAiResponse = true;
             MainActivity act = (MainActivity) requireActivity();
             act.callAi(getPrompt(todoItems), text -> {
-                if (!isAdded()) return;      // fragment still attached?
-                aiText = text;               // store result
+                if (!isAdded()) return;
+                aiText = text;
                 waitingForAiResponse = false;
-                // Show dialog when API response arrives
                 if (shouldShowWelcomeDialog()) {
                     showWelcomeDialog();
                 }
@@ -122,8 +147,6 @@ public class todo_list extends ListFragment {
             todoItems.sort(ToDoItem::compareTo);
             adapter.notifyDataSetChanged();
         }
-        // Only show dialog if we're not waiting for AI response
-        // (if we are waiting, it will be shown in the callback)
         if (!waitingForAiResponse && shouldShowWelcomeDialog()) {
             showWelcomeDialog();
         }
@@ -147,50 +170,30 @@ public class todo_list extends ListFragment {
         }
     }
 
-    public void onAddTaskButtonClick (View view) {
+    public void onAddTaskButtonClick(View view) {
         Navigation.findNavController(view).navigate(R.id.action_todoListFragment_to_addNewItem);
     }
 
-    @Override
-    public void onListItemClick(@NonNull ListView l, @NonNull View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        // Handle item click, implement edit/delete functionality here probably
-        ToDoItem selectedItem = todoItems.get(position);
-
-        Bundle args = new Bundle();
-        args.putSerializable("param1", selectedItem);
-
-        Navigation.findNavController(v)
-                .navigate(R.id.action_todoListFragment_to_toDoItemView, args);
-    }
-
-    // todo item can call this later when implementing add functionalit
     public void addTodoItem(ToDoItem item) {
         todoItems.add(item);
         adapter.notifyDataSetChanged();
     }
 
-    // todo remove item
-    public void removeTodoItem(int position) {
-        if (position >= 0 && position < todoItems.size()) {
-            todoItems.remove(position);
-            adapter.notifyDataSetChanged();
-        }
-    }
     public void removeToDoItemByName(ToDoItem item) {
         for (int i = 0; i < todoItems.size(); i++) {
             if (todoItems.get(i).getName().equals(item.getName())) {
                 todoItems.remove(i);
+                adapter.notifyItemRemoved(i);
                 break;
             }
         }
-        adapter.notifyDataSetChanged();
     }
 
     private void updateToDoItem(String originalName, ToDoItem updatedItem) {
         for (int i = 0; i < todoItems.size(); i++) {
             if (todoItems.get(i).getName().equals(originalName)) {
                 todoItems.set(i, updatedItem);
+                adapter.notifyItemChanged(i);
                 break;
             }
         }
