@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.ListFragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -23,15 +24,36 @@ import java.util.ArrayList;
 
 public class todo_list extends ListFragment {
 
+    private static boolean hasShownWelcomeThisSession = false;
+
     private ArrayList<ToDoItem> todoItems;
     private ArrayAdapter<ToDoItem> adapter;
 
     private TodoItemDB database;
 
+    private String aiText = "must be null";
+    private boolean requestedOnce = false;
+    private boolean waitingForAiResponse = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_todo_list, container, false);
+    }
+
+    private String getPrompt(ArrayList<ToDoItem> list) {
+        StringBuilder prompt = new StringBuilder("Provide a short briefing for the tasks here that includes only task name, priority and time estimate as well as when you think they should be started (day, month non numeric) (max one sentence per item): ");
+        for (int i = 0; i < list.size(); i++) {
+            prompt.append(" Task Name: ");
+            prompt.append(list.get(i).getName());
+            prompt.append(" Task Desc: ");
+            prompt.append(list.get(i).getDescription());
+            prompt.append(" Task Due Date: ");
+            prompt.append(list.get(i).getDueDate());
+            prompt.append(" Task Priority: ");
+            prompt.append(list.get(i).getPriority());
+        }
+        return prompt.toString();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -43,11 +65,6 @@ public class todo_list extends ListFragment {
         addTask.setOnClickListener(this::onAddTaskButtonClick);
 
         database = new TodoItemDB(requireContext());
-
-        // temp items
-        //database.insert(new ToDoItem("CS175 HW", "Complete the hw", LocalDate.now(), 4));
-        //database.insert(new ToDoItem("CS147 HW", "do the lab assignment", LocalDate.now(), 2));
-        //database.insert(new ToDoItem("CS157C HW", "Complete Midterm", LocalDate.now(), 1));
 
         todoItems = database.getAllToDoItems();
         todoItems.sort(ToDoItem::compareTo);
@@ -78,6 +95,56 @@ public class todo_list extends ListFragment {
                 updateToDoItem(originalName, updatedItem);
             }
         });
+
+        // Start the AI call as early as possible
+        if (!requestedOnce) {
+            requestedOnce = true;
+            waitingForAiResponse = true;
+            MainActivity act = (MainActivity) requireActivity();
+            act.callAi(getPrompt(todoItems), text -> {
+                if (!isAdded()) return;      // fragment still attached?
+                aiText = text;               // store result
+                waitingForAiResponse = false;
+                // Show dialog when API response arrives
+                if (shouldShowWelcomeDialog()) {
+                    showWelcomeDialog();
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (database != null && todoItems != null) {
+            todoItems.clear();
+            todoItems.addAll(database.getAllToDoItems());
+            todoItems.sort(ToDoItem::compareTo);
+            adapter.notifyDataSetChanged();
+        }
+        // Only show dialog if we're not waiting for AI response
+        // (if we are waiting, it will be shown in the callback)
+        if (!waitingForAiResponse && shouldShowWelcomeDialog()) {
+            showWelcomeDialog();
+        }
+    }
+
+    private boolean shouldShowWelcomeDialog() {
+        return !hasShownWelcomeThisSession && todoItems != null && !todoItems.isEmpty();
+    }
+
+    private void showWelcomeDialog() {
+        if (shouldShowWelcomeDialog()) {
+            hasShownWelcomeThisSession = true;
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Productiv AI Task Overview")
+                    .setMessage(aiText)
+                    .setPositiveButton("Dismiss", (dialog, which) -> {
+                        dialog.dismiss();
+                    })
+                    .setCancelable(false)
+                    .show();
+        }
     }
 
     public void onAddTaskButtonClick (View view) {
