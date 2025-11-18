@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
 
     <TextView
         android:id="@+id/title"
@@ -16,30 +17,32 @@
         android:background="?attr/colorPrimary"
         android:textColor="@android:color/white" />
 
-    <ListView
-        android:id="@android:id/list"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/todo_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp" />
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
 
     <TextView
-        android:id="@android:id/empty"
+        android:id="@+id/empty_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center"
         android:text="No tasks yet\nAdd your first task"
         android:textSize="18sp"
-        android:textColor="@android:color/darker_gray" />
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/addTaskButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Task" />
-
-    <!-- just a placeholder UI for now -->
+        android:layout_margin="16dp"
+        android:text="Add Task"
+        style="@style/Widget.MaterialComponents.Button" />
 
 </LinearLayout>
