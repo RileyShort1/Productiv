@@ -1,5 +1,7 @@
 package edu.sjsu.android.productiv;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,6 +19,10 @@ import android.widget.Toast;
 import com.redmadrobot.inputmask.MaskedTextChangedListener;
 
 public class timer extends Fragment {
+    private static final String PREFS_NAME = "TimerPrefs";
+    private static final String KEY_TIMER_END_TIME = "timer_end_time";
+    private static final String KEY_IS_RUNNING = "timer_is_running";
+    
     private EditText editTime;
     private CountDownTimer timer;
     private boolean isRunning;
@@ -37,6 +43,7 @@ public class timer extends Fragment {
         View view = inflater.inflate(R.layout.fragment_timer, container, false);
         Button btnStart = view.findViewById(R.id.btn_start);
         Button btnPause = view.findViewById(R.id.btn_pause);
+        Button btnClear = view.findViewById(R.id.btn_clear);
 
         editTime = view.findViewById(R.id.edit_time);
 
@@ -48,37 +55,117 @@ public class timer extends Fragment {
 
         btnStart.setOnClickListener(v -> startTimer());
         btnPause.setOnClickListener(v -> pauseTimer());
+        btnClear.setOnClickListener(v -> clearTimer());
+
+        // Restore timer state if it was running in the background
+        restoreTimerState();
 
         return view;
     }
 
-    public void startTimer() {
-        editTime.setEnabled(false);
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Check if timer should be restored when returning to this fragment
+        if (!isRunning) {
+            restoreTimerState();
+        }
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Timer will continue running in background via SharedPreferences
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Don't cancel timer - let it continue running in background
+        // Timer has null checks to prevent crashes when view is destroyed
+        // Timer state is saved in SharedPreferences, so we can restore it if needed
+        editTime = null; // Clear reference to prevent memory leaks
+    }
+
+    public void startTimer() {
         if (isRunning) {
             return;
         }
 
-        String time = editTime.getText().toString();
-        String [] parts = time.split(":");
+        String time = editTime.getText().toString().trim();
+        
+        // Validate input is not empty
+        if (time.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter a time", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        int hours = Integer.parseInt(parts[0]);
-        int minutes = Integer.parseInt(parts[1]);
-        int seconds = Integer.parseInt(parts[2]);
+        // Validate format - should have exactly 3 parts separated by colons
+        String[] parts = time.split(":");
+        if (parts.length != 3) {
+            Toast.makeText(getContext(), "Invalid time format. Use HH:MM:SS", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        // Parse and validate each part
+        int hours, minutes, seconds;
+        try {
+            hours = Integer.parseInt(parts[0]);
+            minutes = Integer.parseInt(parts[1]);
+            seconds = Integer.parseInt(parts[2]);
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), "Invalid time format. Use numbers only", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validate ranges
+        if (hours < 0) {
+            Toast.makeText(getContext(), "Hours cannot be negative", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (minutes < 0 || minutes > 59) {
+            Toast.makeText(getContext(), "Minutes must be between 0 and 59", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (seconds < 0 || seconds > 59) {
+            Toast.makeText(getContext(), "Seconds must be between 0 and 59", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Calculate total time and validate it's greater than 0
         total = ((hours * 3600) + (minutes * 60) + seconds) * 1000L;
+        if (total <= 0) {
+            Toast.makeText(getContext(), "Time must be greater than 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // All validation passed - disable input and start timer
+        editTime.setEnabled(false);
+
+        // Save timer end time to SharedPreferences for background persistence
+        long endTime = System.currentTimeMillis() + total;
+        saveTimerState(endTime, true);
 
         timer = new CountDownTimer(total, 1000) {
             @Override
             public void onFinish() {
-                editTime.setText("00:00:00");
-                Toast.makeText(getContext(), "Timer Finished!", Toast.LENGTH_SHORT).show();
-                editTime.setEnabled(true);
+                // Check if view still exists before updating
+                if (editTime != null && getView() != null) {
+                    editTime.setText("00:00:00");
+                    editTime.setEnabled(true);
+                    Toast.makeText(getContext(), "Timer Finished!", Toast.LENGTH_SHORT).show();
+                }
                 isRunning = false;
+                // Clear saved timer state
+                clearTimerState();
             }
 
             @Override
             public void onTick(long millisUntilFinished) {
+                // Check if view still exists before updating
+                if (editTime == null || getView() == null) {
+                    return;
+                }
                 total = millisUntilFinished;
                 int remaining = (int) (millisUntilFinished / 1000);
                 int hours = remaining / 3600;
@@ -97,5 +184,105 @@ public class timer extends Fragment {
             timer.cancel();
             isRunning = false;
         }
+        // Clear saved timer state when paused
+        clearTimerState();
+    }
+
+    public void clearTimer() {
+        // Stop any running timer
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+        isRunning = false;
+
+        // Reset the display
+        if (editTime != null) {
+            editTime.setText("00:00:00");
+            editTime.setEnabled(true);
+        }
+
+        // Clear saved timer state
+        clearTimerState();
+    }
+
+    private void saveTimerState(long endTime, boolean running) {
+        if (getContext() == null) return;
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong(KEY_TIMER_END_TIME, endTime);
+        editor.putBoolean(KEY_IS_RUNNING, running);
+        editor.apply();
+    }
+
+    private void clearTimerState() {
+        if (getContext() == null) return;
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(KEY_TIMER_END_TIME);
+        editor.remove(KEY_IS_RUNNING);
+        editor.apply();
+    }
+
+    private void restoreTimerState() {
+        if (getContext() == null || isRunning) return;
+
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean wasRunning = prefs.getBoolean(KEY_IS_RUNNING, false);
+        
+        if (!wasRunning) {
+            return;
+        }
+
+        long endTime = prefs.getLong(KEY_TIMER_END_TIME, 0);
+        if (endTime == 0) {
+            return;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long remainingTime = endTime - currentTime;
+
+        // Check if timer has already finished
+        if (remainingTime <= 0) {
+            // Timer finished while away
+            editTime.setText("00:00:00");
+            editTime.setEnabled(true);
+            clearTimerState();
+            Toast.makeText(getContext(), "Timer Finished!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Restore the timer with remaining time
+        editTime.setEnabled(false);
+        total = remainingTime;
+
+        timer = new CountDownTimer(remainingTime, 1000) {
+            @Override
+            public void onFinish() {
+                // Check if view still exists before updating
+                if (editTime != null && getView() != null) {
+                    editTime.setText("00:00:00");
+                    editTime.setEnabled(true);
+                    Toast.makeText(getContext(), "Timer Finished!", Toast.LENGTH_SHORT).show();
+                }
+                isRunning = false;
+                clearTimerState();
+            }
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Check if view still exists before updating
+                if (editTime == null || getView() == null) {
+                    return;
+                }
+                total = millisUntilFinished;
+                int remaining = (int) (millisUntilFinished / 1000);
+                int hours = remaining / 3600;
+                int minutes = (remaining % 3600) / 60;
+                int seconds = remaining % 60;
+                editTime.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+            }
+        }.start();
+        isRunning = true;
     }
 }
