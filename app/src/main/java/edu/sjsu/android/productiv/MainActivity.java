@@ -1,8 +1,11 @@
 package edu.sjsu.android.productiv;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -118,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        updateNavHeader();
         // Listen to nav changes to hide/show drawer
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
@@ -171,5 +175,18 @@ public class MainActivity extends AppCompatActivity {
             navController.navigate(R.id.todoListFragment);
         }
         return true;
+    }
+
+    private void updateNavHeader() {
+        View headerView = navigationView.getHeaderView(0);
+        TextView userNameTextView = headerView.findViewById(R.id.user_name);
+        TextView userEmailTextView = headerView.findViewById(R.id.user_email);
+
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String userName = prefs.getString("current_user_name", "User Name");
+        String userEmail = prefs.getString("current_user_email", "user@email.com");
+
+        userNameTextView.setText(userName);
+        userEmailTextView.setText(userEmail);
     }
 }

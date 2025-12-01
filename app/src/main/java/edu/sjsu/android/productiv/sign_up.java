@@ -1,5 +1,7 @@
 package edu.sjsu.android.productiv;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.ContentValues;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,6 +19,7 @@ import androidx.navigation.Navigation;
 public class sign_up extends Fragment {
     private EditText nameEditText;
     private EditText passwordEditText;
+    private EditText emailEditText;
 
 
     @Nullable
@@ -31,6 +34,7 @@ public class sign_up extends Fragment {
 
         Button btnSignUp = view.findViewById(R.id.btn_sign_up);
         nameEditText = view.findViewById(R.id.edit_text_signup_name);
+        emailEditText = view.findViewById(R.id.edit_text_signup_email);
         passwordEditText = view.findViewById(R.id.edit_text_signup_password);
 
         // Navs to to-do list when clicked
@@ -41,18 +45,32 @@ public class sign_up extends Fragment {
         ContentValues values = new ContentValues();
 
         String name = nameEditText.getText().toString();
+        String email = emailEditText.getText().toString();
         String password = passwordEditText.getText().toString();
 
         if (!name.isEmpty() && !password.isEmpty()) {
             values.put("name", name);
+            values.put("email", email);
             values.put("password", password);
+
             UsersDB db = new UsersDB(getContext());
             db.insert(values);
+
+            saveCurrentUser(name, email);
+
             Navigation.findNavController(v).navigate(R.id.action_signUpFragment_to_todoListFragment);
         }
         else {
             Toast.makeText(getContext(), "Name and Password must be provided", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private void saveCurrentUser(String name, String email) {
+        getActivity().getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                .edit()
+                .putString("current_user_name", name)
+                .putString("current_user_email", email)
+                .apply();
     }
 }
