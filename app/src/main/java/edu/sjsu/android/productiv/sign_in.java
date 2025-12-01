@@ -1,5 +1,7 @@
 package edu.sjsu.android.productiv;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -54,6 +56,7 @@ public class sign_in extends Fragment {
         UsersDB db = new UsersDB(getContext());
         Cursor c = db.getAllUsers(null);
         boolean valid = false;
+        String userEmail = "";
 
         if (c.moveToFirst()) {
             do {
@@ -69,10 +72,19 @@ public class sign_in extends Fragment {
         c.close();
 
         if (valid) {
+            saveCurrentUser(name, userEmail);
             Navigation.findNavController(v).navigate(R.id.action_signInFragment_to_todoListFragment);
         } else {
             Toast.makeText(getContext(), "Invalid Name or Password", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private void saveCurrentUser(String name, String email) {
+        getActivity().getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                .edit()
+                .putString("current_user_name", name)
+                .putString("current_user_email", email)
+                .apply();
     }
 }

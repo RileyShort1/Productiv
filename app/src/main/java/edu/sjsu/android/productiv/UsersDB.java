@@ -13,11 +13,13 @@ public class UsersDB extends SQLiteOpenHelper {
     private static final String USER_ID = "_user_id";
     private static final String NAME = "name";
     private static final String PASSWORD = "password";
+    private static final String EMAIL = "email";
     static final String CREATE_TABLE =
             String.format("CREATE TABLE %s (" +
                     "%s INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "%s TEXT NOT NULL, " +
-                    "%s TEXT NOT NULL);", TABLE_NAME, USER_ID, NAME, PASSWORD);
+                    "%s TEXT NOT NULL, " +
+                    "%s TEXT NOT NULL);", TABLE_NAME, USER_ID, NAME, EMAIL, PASSWORD);
 
     public UsersDB(Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -42,7 +44,7 @@ public class UsersDB extends SQLiteOpenHelper {
     public Cursor getAllUsers(String orderBy) {
         SQLiteDatabase db = getWritableDatabase();
         return db.query(TABLE_NAME,
-                new String[]{USER_ID, NAME, PASSWORD},
+                new String[]{USER_ID, NAME, EMAIL, PASSWORD},
                 null, null, null, null, orderBy);
     }
 }
