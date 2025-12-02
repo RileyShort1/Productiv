@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -159,15 +160,47 @@ public class todo_list extends Fragment {
     private void showWelcomeDialog() {
         if (shouldShowWelcomeDialog()) {
             hasShownWelcomeThisSession = true;
-            new AlertDialog.Builder(requireContext())
+            AlertDialog dialog = new AlertDialog.Builder(requireContext())
                     .setTitle("Productiv AI Task Overview")
                     .setMessage(aiText)
-                    .setPositiveButton("Dismiss", (dialog, which) -> {
-                        dialog.dismiss();
+                    .setPositiveButton("Dismiss", (d, which) -> {
+                        d.dismiss();
+                    })
+                    .setNeutralButton("Refresh", (d, which) -> {
+                        // Refresh button clicked - will be handled below
                     })
                     .setCancelable(false)
-                    .show();
+                    .create();
+            
+            dialog.show();
+            
+            // Override the refresh button to call AI again
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+                refreshAiResponse(dialog);
+            });
         }
+    }
+
+    private void refreshAiResponse(AlertDialog dialog) {
+        if (todoItems == null || todoItems.isEmpty()) {
+            Toast.makeText(getContext(), "No tasks to analyze", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Disable refresh button while loading
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(false);
+        dialog.setMessage("Refreshing AI response...");
+        
+        waitingForAiResponse = true;
+        MainActivity act = (MainActivity) requireActivity();
+        act.callAi(getPrompt(todoItems), text -> {
+            if (!isAdded() || dialog == null || !dialog.isShowing()) return;
+            
+            aiText = text;
+            waitingForAiResponse = false;
+            dialog.setMessage(aiText);
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(true);
+        });
     }
 
     public void onAddTaskButtonClick(View view) {
