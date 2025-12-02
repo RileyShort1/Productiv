@@ -62,6 +62,7 @@ public class sign_in extends Fragment {
             do {
                 String dbName = c.getString(c.getColumnIndexOrThrow("name"));
                 String dbPassword = c.getString(c.getColumnIndexOrThrow("password"));
+                userEmail = c.getString(c.getColumnIndexOrThrow("email"));
 
                 if (name.equals(dbName) && password.equals(dbPassword)) {
                     valid = true;
@@ -73,6 +74,9 @@ public class sign_in extends Fragment {
 
         if (valid) {
             saveCurrentUser(name, userEmail);
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).updateNavHeader();
+            }
             Navigation.findNavController(v).navigate(R.id.action_signInFragment_to_todoListFragment);
         } else {
             Toast.makeText(getContext(), "Invalid Name or Password", Toast.LENGTH_SHORT).show();
