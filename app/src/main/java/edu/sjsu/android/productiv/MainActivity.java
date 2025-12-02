@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -141,6 +142,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.action_sign_out) {
+                // Show confirmation dialog
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Sign Out")
+                        .setMessage("Are you sure you want to sign out?")
+                        .setPositiveButton("Yes", (dialog, which) -> signOutUser())
+                        .setNegativeButton("No", null)
+                        .show();
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            }
+
+            // Let NavigationUI handle other items normally
+            return NavigationUI.onNavDestinationSelected(item, navController)
+                    || super.onOptionsItemSelected(item);
+        });
+
         // Handle back button
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -177,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void updateNavHeader() {
+    public void updateNavHeader() {
         View headerView = navigationView.getHeaderView(0);
         TextView userNameTextView = headerView.findViewById(R.id.user_name);
         TextView userEmailTextView = headerView.findViewById(R.id.user_email);
@@ -188,5 +210,20 @@ public class MainActivity extends AppCompatActivity {
 
         userNameTextView.setText(userName);
         userEmailTextView.setText(userEmail);
+    }
+
+    private void signOutUser() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        prefs.edit().remove("current_user_name")
+                .remove("current_user_email")
+                .apply();
+
+        updateNavHeader();
+
+        if (navController != null) {
+            navController.navigate(R.id.signInFragment);
+        }
+
+        Toast.makeText(this, "Signed out", Toast.LENGTH_SHORT).show();
     }
 }

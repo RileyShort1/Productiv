@@ -33,12 +33,18 @@ public class sign_up extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Button btnSignUp = view.findViewById(R.id.btn_sign_up);
+        Button btnSignInNavigate = view.findViewById(R.id.btn_sign_in_nav);
+
         nameEditText = view.findViewById(R.id.edit_text_signup_name);
         emailEditText = view.findViewById(R.id.edit_text_signup_email);
         passwordEditText = view.findViewById(R.id.edit_text_signup_password);
 
         // Navs to to-do list when clicked
         btnSignUp.setOnClickListener(v -> {signUp(v);});
+
+        btnSignInNavigate.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_signUpFragment_to_signInFragment);
+        });
     }
 
     public void signUp (View v) {
@@ -48,7 +54,7 @@ public class sign_up extends Fragment {
         String email = emailEditText.getText().toString();
         String password = passwordEditText.getText().toString();
 
-        if (!name.isEmpty() && !password.isEmpty()) {
+        if (!name.isEmpty() && !password.isEmpty() && !email.isEmpty()) {
             values.put("name", name);
             values.put("email", email);
             values.put("password", password);
@@ -58,10 +64,15 @@ public class sign_up extends Fragment {
 
             saveCurrentUser(name, email);
 
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).updateNavHeader();
+            }
+
+
             Navigation.findNavController(v).navigate(R.id.action_signUpFragment_to_todoListFragment);
         }
         else {
-            Toast.makeText(getContext(), "Name and Password must be provided", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Name, Email, and Password must be provided", Toast.LENGTH_SHORT).show();
         }
 
     }
