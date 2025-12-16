@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private final TodoListAdapter adapter;
-
+    // References the todolist adapter
     public ItemTouchHelperCallback(TodoListAdapter adapter) {
         this.adapter = adapter;
     }
@@ -22,6 +22,7 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
         return false;
     }
 
+    // Only allow up and down dragging
     @Override
     public int getMovementFlags(@NonNull RecyclerView recyclerView,
                                 @NonNull RecyclerView.ViewHolder viewHolder) {

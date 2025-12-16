@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
+// Class to edit the the todolist item
 public class ToDoItemEdit extends Fragment {
 
     private static final String ARG_ITEM = "itemToEdit";
@@ -66,6 +66,7 @@ public class ToDoItemEdit extends Fragment {
 
         database = new TodoItemDB(requireContext());
 
+        // Get UI fields
         EditText nameField = view.findViewById(R.id.itemName);
         EditText descriptionField = view.findViewById(R.id.description);
         EditText dueDateField = view.findViewById(R.id.dueDate);
@@ -73,6 +74,7 @@ public class ToDoItemEdit extends Fragment {
         Button saveButton = view.findViewById(R.id.saveButton);
         Button cancelButton = view.findViewById(R.id.cancelButton);
 
+        // Set text fields
         nameField.setText(currentItem.getName());
         descriptionField.setText(currentItem.getDescription());
         dueDateField.setText(currentItem.getDueDate().format(formatter));
@@ -83,13 +85,16 @@ public class ToDoItemEdit extends Fragment {
                 .toInstant(ZoneOffset.UTC)
                 .toEpochMilli();
 
+        // Build date picker
         MaterialDatePicker<Long> picker =
                 MaterialDatePicker.Builder.datePicker()
                         .setTitleText("Select due date")
                         .setSelection(initialSelection)
                         .build();
 
+        // When user clicks due date we open the date picker
         dueDateField.setOnClickListener(v -> picker.show(getParentFragmentManager(), "editDueDate"));
+        // When user selects the date
         picker.addOnPositiveButtonClickListener(selection -> {
             LocalDate date = Instant.ofEpochMilli(selection)
                     .atZone(ZoneOffset.UTC)
@@ -97,12 +102,14 @@ public class ToDoItemEdit extends Fragment {
             dueDateField.setText(date.format(formatter));
         });
 
+        // When user presses save, store the text
         saveButton.setOnClickListener(v -> {
             String name = nameField.getText().toString().trim();
             String description = descriptionField.getText().toString().trim();
             String dueDateText = dueDateField.getText().toString().trim();
             String priorityText = priorityField.getText().toString().trim();
 
+            // Validating the fields
             if (name.isEmpty()) {
                 nameField.setError("Name is required");
                 return;
@@ -120,6 +127,7 @@ public class ToDoItemEdit extends Fragment {
                 return;
             }
 
+            // Initial Priority
             int priority = 4;
             if (!priorityText.isEmpty()) {
                 try {
@@ -130,13 +138,16 @@ public class ToDoItemEdit extends Fragment {
                 }
             }
 
+            // Create the updated item
             ToDoItem updatedItem = new ToDoItem(name, description, dueDate, priority);
+            // Update the db
             boolean success = database.update(currentItem.getName(), updatedItem);
             if (!success) {
                 Toast.makeText(requireContext(), "Unable to save changes", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            // Send the results to the parent fragment
             Bundle result = new Bundle();
             result.putSerializable("updatedItem", updatedItem);
             result.putString("originalName", currentItem.getName());
@@ -145,7 +156,7 @@ public class ToDoItemEdit extends Fragment {
             getParentFragmentManager().setFragmentResult("editListResult", result);
             Navigation.findNavController(view).popBackStack();
         });
-
+        // Cancel editing
         cancelButton.setOnClickListener(v -> Navigation.findNavController(view).popBackStack());
     }
 }

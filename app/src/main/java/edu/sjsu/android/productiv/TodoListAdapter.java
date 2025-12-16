@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-
+// Adapter for todolist
 public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHolder> {
 
     private ArrayList<ToDoItem> items;
@@ -70,6 +70,7 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
         return items.size();
     }
 
+    // For moving the order of item when dragging
     public void moveItem(int fromPosition, int toPosition) {
         if (fromPosition < toPosition) {
             for (int i = fromPosition; i < toPosition; i++) {
@@ -105,6 +106,7 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
             dragHandle = itemView.findViewById(R.id.drag_handle);
         }
 
+        //
         @SuppressLint("ClickableViewAccessibility")
         void bind(ToDoItem item, int position) {
             taskName.setText(item.getName());
@@ -131,6 +133,7 @@ public class TodoListAdapter extends RecyclerView.Adapter<TodoListAdapter.ViewHo
             });
         }
 
+        // Get priority color for all items
         private String getPriorityColor(int priority) {
             switch (priority) {
                 case 1: return "#b0170c"; // Dark Red

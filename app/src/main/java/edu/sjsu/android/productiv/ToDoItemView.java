@@ -19,7 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.time.format.DateTimeFormatter;
-
+// The details for a single toDoItem
 public class ToDoItemView extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
@@ -59,24 +59,27 @@ public class ToDoItemView extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Reference the UI fields
         final TextView title = view.findViewById(R.id.itemName);
         final TextView description  = view.findViewById(R.id.description);
         final TextView priorityView = view.findViewById(R.id.priority);
         final LinearLayout priorityBadge = view.findViewById(R.id.priorityBadge);
         final TextView dueDateField = view.findViewById(R.id.dueDate);
 
+        // When clicked, tells the fragment to remove it
         Button completeButton = view.findViewById(R.id.addButton);
         completeButton.setOnClickListener(this::completeItem);
-
+        // When clicked navigate to the edit fragment
         Button editButton = view.findViewById(R.id.editButton);
         editButton.setOnClickListener(v -> {
             Bundle args = new Bundle();
             args.putSerializable("itemToEdit", item);
             Navigation.findNavController(v).navigate(R.id.action_toDoItemView_to_toDoItemEdit, args);
         });
-
+        // Inputs the data to the UI
         bindItemToUi(title, description, priorityView, dueDateField, priorityBadge);
 
+        // Gets updates from the edit fragment and applies it
         getParentFragmentManager().setFragmentResultListener("editResult", this, (key, bundle) -> {
             ToDoItem updatedItem = (ToDoItem) bundle.getSerializable("updatedItem");
             if (updatedItem != null) {
@@ -86,6 +89,7 @@ public class ToDoItemView extends Fragment {
         });
     }
 
+    // Assigns information to the UI fields
     private void bindItemToUi(TextView title,
                               TextView description,
                               TextView priority,
@@ -101,6 +105,7 @@ public class ToDoItemView extends Fragment {
         setPriorityBadgeColor(priorityBadge, item.getPriority());
     }
 
+    // Marks the item as finished
     public void completeItem(View view) {
         //Toast.makeText(getContext(), "Clicked", Toast.LENGTH_SHORT).show();
         // send current item back to remove from db
@@ -110,7 +115,7 @@ public class ToDoItemView extends Fragment {
         Navigation.findNavController(view).navigate(R.id.action_toDoItemView_to_todoListFragment);
     }
 
-    // Changes color of priority
+    // Changes color of priority for detail screen
     private void setPriorityBadgeColor(LinearLayout priorityBadge, int priorityLevel) {
         GradientDrawable drawable = (GradientDrawable) priorityBadge.getBackground();
 

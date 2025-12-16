@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/signInFragment"
         android:name="edu.sjsu.android.productiv.sign_in"
-        android:label="Sign In">
+        android:label="Productiv">
         <action
             android:id="@+id/action_signInFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
@@ -22,7 +22,7 @@
     <fragment
         android:id="@+id/signUpFragment"
         android:name="edu.sjsu.android.productiv.sign_up"
-        android:label="Sign Up">
+        android:label="Productiv">
         <action
             android:id="@+id/action_signUpFragment_to_signInFragment"
             app:destination="@id/signInFragment"
@@ -71,12 +71,12 @@
     <fragment
         android:id="@+id/toDoItemEdit"
         android:name="edu.sjsu.android.productiv.ToDoItemEdit"
-        android:label="Edit To-do"
+        android:label="Edit Item"
         tools:layout="@layout/fragment_to_do_item_edit" />
     <fragment
         android:id="@+id/addNewItem"
         android:name="edu.sjsu.android.productiv.AddNewItem"
-        android:label="AddNewItem" >
+        android:label="Add New Item" >
         <action
             android:id="@+id/action_addNewItem_to_todoListFragment"
             app:destination="@id/todoListFragment" />
